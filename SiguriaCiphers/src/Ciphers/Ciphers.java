@@ -4,7 +4,7 @@ public class Ciphers {
 
 	public static StringBuffer encrypt(String text, int s)
     { 
-        StringBuffer result= new StringBuffer(); 
+        StringBuffer ecnryptedText= new StringBuffer(); 
   
         for (int i=0; i<text.length(); i++) 
         { 
@@ -12,16 +12,16 @@ public class Ciphers {
             { 
                 char ch = (char)(((int)text.charAt(i) + 
                                   s - 65) % 26 + 65); 
-                result.append(ch); 
+                ecnryptedText.append(ch); 
             } 
             else
             { 
                 char ch = (char)(((int)text.charAt(i) + 
                                   s - 97) % 26 + 97); 
-                result.append(ch); 
+                ecnryptedText.append(ch); 
             } 
         } 
-        return result; 
+        return ecnryptedText; 
     } 
   
     // Driver code 
