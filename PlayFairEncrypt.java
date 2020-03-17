@@ -193,8 +193,14 @@ class PlayfairCipherEncrypt {
         System.out.println("Enter plaintext: ");
         String key_input = sc.next();
 
+        if (key_input.length() % 2 == 0)
+        {
             System.out.println("Encryption: " + x.encryptMessage(key_input));
-            
+        }
+        else
+        {
+            System.out.println("Message length is not even!");
+        }
         sc.close();
     }
 }
