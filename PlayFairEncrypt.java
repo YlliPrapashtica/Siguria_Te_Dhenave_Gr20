@@ -1,11 +1,12 @@
 package playfaircipher;
+ 
 import java.util.Scanner;
-
-class PlayfairCipherEncrypt {
-
+ 
+public class PlayfairCipherEncrypt
+{
     private String Keyword = new String();
     private String Key = new String();
-    private char mat_array[][] = new char[5][5];
+    private char   mat_array[][] = new char[5][5];
  
     public void setKey(String k)
     {
@@ -21,7 +22,7 @@ class PlayfairCipherEncrypt {
                     flag = true;
                 }
             }
-            if (flag == false)  
+            if (flag == false)
                 K_adjust = K_adjust + k.charAt(i);
             flag = false;
         }
@@ -32,7 +33,7 @@ class PlayfairCipherEncrypt {
     {
         boolean flag = true;
         char current;
-         Key = Keyword;
+        Key = Keyword;
         for (int i = 0; i < 26; i++)
         {
             current = (char) (i + 97);
@@ -53,7 +54,7 @@ class PlayfairCipherEncrypt {
         System.out.println(Key);
         matrix();
     }
-
+ 
     private void matrix()
     {
         int counter = 0;
@@ -85,7 +86,7 @@ class PlayfairCipherEncrypt {
                 text = text + plaintxt.charAt(tmp);
         }
         len = text.length();
-        for (i = 0; i < len-1; i = i + 2)
+        for (i = 0; i < len; i = i + 2)
         {
             if (text.charAt(i + 1) == text.charAt(i))
             {
@@ -184,18 +185,19 @@ class PlayfairCipherEncrypt {
  
     public static void main(String[] args)
     {
-    	PlayfairCipherEncrypt x = new PlayfairCipherEncrypt();
+        PlayfairCipherEncrypt x = new PlayfairCipherEncrypt();
         Scanner sc = new Scanner(System.in);
         System.out.println("Enter key: ");
         String keyword = sc.next();
         x.setKey(keyword);
         x.KeyGen();
-        System.out.println("Enter plaintext: ");
+        System.out
+                .println("Enter plaintext: ");
         String key_input = sc.next();
-
         if (key_input.length() % 2 == 0)
         {
             System.out.println("Encryption: " + x.encryptMessage(key_input));
+            
         }
         else
         {
