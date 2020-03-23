@@ -1,12 +1,12 @@
 package playfaircipher2;
-
+ 
 import java.util.Scanner;
-
-public class PlayfairCipherDecrypt {
-
+ 
+public class PlayfairCipherDecrypt
+{
     private String Keyword = new String();
     private String Key = new String();
-    private char mat_array[][] = new char[5][5];
+    private char   mat_array[][] = new char[5][5];
  
     public void setKey(String k)
     {
@@ -22,7 +22,7 @@ public class PlayfairCipherDecrypt {
                     flag = true;
                 }
             }
-            if (flag == false)  
+            if (flag == false)
                 K_adjust = K_adjust + k.charAt(i);
             flag = false;
         }
@@ -33,7 +33,7 @@ public class PlayfairCipherDecrypt {
     {
         boolean flag = true;
         char current;
-         Key = Keyword;
+        Key = Keyword;
         for (int i = 0; i < 26; i++)
         {
             current = (char) (i + 97);
@@ -54,7 +54,7 @@ public class PlayfairCipherDecrypt {
         System.out.println(Key);
         matrix();
     }
-
+ 
     private void matrix()
     {
         int counter = 0;
@@ -69,7 +69,7 @@ public class PlayfairCipherDecrypt {
             System.out.println();
         }
     }
-    
+ 
     private String format(String plaintxt)
     {
         int i = 0;
@@ -86,7 +86,7 @@ public class PlayfairCipherDecrypt {
                 text = text + plaintxt.charAt(tmp);
         }
         len = text.length();
-        for (i = 0; i < len-1; i = i + 2)
+        for (i = 0; i < len; i = i + 2)
         {
             if (text.charAt(i + 1) == text.charAt(i))
             {
@@ -115,7 +115,6 @@ public class PlayfairCipherDecrypt {
         return x;
     }
  
- 
     public int[] GetDimensions(char letter)
     {
         int[] key = new int[2];
@@ -136,7 +135,7 @@ public class PlayfairCipherDecrypt {
         return key;
     }
  
-    public String decryptMessage(String Code)
+     public String decryptMessage(String Code)
     {
         String Original = new String();
         String src_arr[] = DivPair(Code);
@@ -184,21 +183,22 @@ public class PlayfairCipherDecrypt {
         return Original;
     }
     
+ 
     public static void main(String[] args)
     {
-    	PlayfairCipherDecrypt x = new PlayfairCipherDecrypt();
+        PlayfairCipherDecrypt x = new PlayfairCipherDecrypt();
         Scanner sc = new Scanner(System.in);
         System.out.println("Enter key: ");
         String keyword = sc.next();
         x.setKey(keyword);
         x.KeyGen();
-        System.out.println("Enter ciphertext: ");
+        System.out
+                .println("Enter ciphertext: ");
         String key_input = sc.next();
-
         if (key_input.length() % 2 == 0)
         {
-        	System.out.println("Decryption: "
-                    + x.decryptMessage(key_input));
+            System.out.println("Decryption: " + x.decryptMessage(key_input));
+            
         }
         else
         {
@@ -206,6 +206,4 @@ public class PlayfairCipherDecrypt {
         }
         sc.close();
     }
-
-
 }
