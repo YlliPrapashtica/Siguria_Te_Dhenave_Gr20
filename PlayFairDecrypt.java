@@ -10,23 +10,23 @@ public class PlayfairCipherDecrypt
  
     public void setKey(String k)
     {
-        String K_adjust = new String();
-        boolean flag = false;
-        K_adjust = K_adjust + k.charAt(0);
+        String K_fit = new String();
+        boolean SIG = false;
+        K_fit = K_fit + k.charAt(0);
         for (int i = 1; i < k.length(); i++)
         {
-            for (int j = 0; j < K_adjust.length(); j++)
+            for (int j = 0; j < K_fit.length(); j++)
             {
-                if (k.charAt(i) == K_adjust.charAt(j))
+                if (k.charAt(i) == K_fit.charAt(j))
                 {
-                    flag = true;
+                    SIG = true;
                 }
             }
-            if (flag == false)
-                K_adjust = K_adjust + k.charAt(i);
-            flag = false;
+            if (SIG == false)
+                K_fit = K_fit + k.charAt(i);
+            SIG = false;
         }
-        Keyword = K_adjust;
+        Keyword = K_fit;
     }
  
     public void KeyGen()
@@ -51,7 +51,6 @@ public class PlayfairCipherDecrypt
                 Key = Key + current;
             flag = true;
         }
-        System.out.println(Key);
         matrix();
     }
  
@@ -98,18 +97,18 @@ public class PlayfairCipherDecrypt
  
     private String[] DivPair(String new_string)
     {
-        String Original = format(new_string);
-        int size = Original.length();
+        String Plaintext = format(new_string);
+        int size = Plaintext.length();
         if (size % 2 != 0)
         {
             size++;
-            Original = Original + 'x';
+            Plaintext = Plaintext + 'x';
         }
         String x[] = new String[size / 2];
         int counter = 0;
         for (int i = 0; i < size / 2; i++)
         {
-            x[i] = Original.substring(counter, counter + 2);
+            x[i] = Plaintext.substring(counter, counter + 2);
             counter = counter + 2;
         }
         return x;
