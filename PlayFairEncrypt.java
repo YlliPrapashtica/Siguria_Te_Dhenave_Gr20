@@ -1,5 +1,4 @@
 package playfaircipher;
-
 import java.util.Scanner;
  
 public class PlayfairCipherEncrypt
