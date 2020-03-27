@@ -10,7 +10,7 @@ public class PlayfairCipherEncrypt
     public void setKey(String k)  // Adds the keyword to the matrix, not allowing same letters to appear twice.
     {
         String K_fit = new String();
-        boolean SIG = false;
+        boolean Next = false;
         K_fit = K_fit + k.charAt(0);
         for (int i = 1; i < k.length(); i++)
         {
@@ -18,19 +18,19 @@ public class PlayfairCipherEncrypt
             {
                 if (k.charAt(i) == K_fit.charAt(j))
                 {
-                    SIG = true;
+                    Next = true;
                 }
             }
-            if (SIG == false)
+            if (Next == false)
                 K_fit = K_fit + k.charAt(i);
-            SIG = false;
+            Next = false;
         }
         Keyword = K_fit;
     }
  
     public void KeyGen()
     {
-        boolean SIG = true;
+        boolean Next = true;
         char current;
         Key = Keyword;
         for (int i = 0; i < 26; i++)
@@ -42,13 +42,13 @@ public class PlayfairCipherEncrypt
             {
                 if (current == Keyword.charAt(j))
                 {
-                    SIG = false;
+                    Next = false;
                     break;
                 }
             }
-            if (SIG)
+            if (Next)
                 Key = Key + current; // Shows how keyword applies to the alphabet without repeated letters.
-            SIG = true;
+            Next = true;
         }
         //System.out.println(Key);
         
