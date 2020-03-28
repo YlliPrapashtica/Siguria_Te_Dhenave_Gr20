@@ -1,22 +1,20 @@
 package Ciphers;
 
-import java.util.Scanner;
-
 public class Ciphers {
 
-	public static StringBuffer encrypt(String text, int s) {
+	public static StringBuffer encrypt(String text, int key) {
 		StringBuffer ecnryptedText = new StringBuffer();
 
 		for (int i = 0; i < text.length(); i++) {
 			
 			if (Character.isUpperCase(text.charAt(i))) {
 				
-				char ch = (char) (((int) text.charAt(i) + s - 65) % 26 + 65);
+				char ch = (char) (((int) text.charAt(i) + key - 65) % 26 + 65);
 				ecnryptedText.append(ch);
 			} 
 			else {
 				
-				char ch = (char) (((int) text.charAt(i) + s - 97) % 26 + 97);
+				char ch = (char) (((int) text.charAt(i) + key - 97) % 26 + 97);
 				ecnryptedText.append(ch);
 			}
 		}
@@ -70,60 +68,14 @@ public class Ciphers {
 	}
 	// Driver code
 	public static void main(String[] args) {
-		String text = "ATTACKATONCE";
-		int s = 7;
+		String text = args[2];
+		int key = Integer.parseInt(args[3]);
 		System.out.println("Text  : " + text);
-		System.out.println("Shift : " + s);
-		System.out.println("Cipher: " + encrypt(text, s).toString());
-		System.out.println("Decrypted Message = " + Decrypt(encrypt(text, s).toString(), s));
+		System.out.println("Shift : " + key);
+		System.out.println("Cipher: " + encrypt(text, key).toString());
+		System.out.println("Decrypted Message = " + Decrypt(encrypt(text, key).toString(), key));
 		System.out.println();
-		bruteForce(encrypt(text, s).toString());
+		bruteForce(encrypt(text, key).toString());
 	}
 
 }
-	
-	
-	
-	//char c;
-//	  for(int i=0;i< allChar.length();i++)
-//	  {
-//	   if(allChar.charAt(i)==c)
-//	    return i;
-//	  }
-//	  return -1;
-//	 }
-//	  
-//	 char charAtIndex(int pos)
-//	 {
-//	  return allChar.charAt(pos);
-//	 }
-//	
-//	  
-//	   cipherText=cipherText.toUpperCase();
-//	   
-//	   for(int k=0;k< 26;k++)
-//	   {
-//	    String decryptedText="";
-//	    int key=k;
-//	    for(int i=0;i< cipherText.length();i++)
-//	    {
-//	     int index=b.indexOfChar(cipherText.charAt(i));
-//	     
-//	     if(index==-1)
-//	     {
-//	      decryptedText+=cipherText.charAt(i);
-//	      continue;
-//	     }
-//	     if((index-key)>=0)
-//	     {
-//	      decryptedText+=b.charAtIndex(index-key);
-//	     }
-//	     else
-//	     {
-//	      decryptedText+=b.charAtIndex((index-key)+26);
-//	     }
-//	    }
-//	     
-//	    System.out.println("Decrypted Text Using key"+key+":"+decryptedText);
-//	   }
-//	  }
