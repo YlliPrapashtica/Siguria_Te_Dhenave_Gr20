@@ -154,9 +154,7 @@ public class Ciphers {
 			Next = true;
 		}
 		// System.out.println(Key);
-
 		matrix();
-
 	}
 
 	private static void matrix() // Shows the created matrix.
@@ -185,7 +183,7 @@ public class Ciphers {
 				text = text + plaintxt.charAt(tmp);
 		}
 		len = text.length();
-		for (i = 0; i < len; i = i + 2) // If len-1, adds an x at the end of the keyword id odd.
+		for (i = 0; i < len-1; i = i + 2)
 		{
 			if (text.charAt(i + 1) == text.charAt(i)) {
 				text = text.substring(0, i + 1) + 'x' + text.substring(i + 1);
