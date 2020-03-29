@@ -1,13 +1,14 @@
-package playfaircipher;
+package Ciphers;
+ 
 import java.util.Scanner;
  
-public class PlayfairCipherEncrypt
+public class PlayFairDecrypt
 {
     private String Keyword = new String();
     private String Key = new String();
     private char   mat_array[][] = new char[5][5];
  
-    public void setKey(String k)  // Adds the keyword to the matrix, not allowing same letters to appear twice.
+    public void setKey(String k) // Adds the keyword to the matrix, not allowing same letters to appear twice.
     {
         String K_fit = new String();
         boolean Next = false;
@@ -30,31 +31,32 @@ public class PlayfairCipherEncrypt
  
     public void KeyGen()
     {
-        boolean Next = true;
+        boolean flag = true;
         char current;
         Key = Keyword;
         for (int i = 0; i < 26; i++)
         {
             current = (char) (i + 97); // Alphabet adding 'a' ASCII.
-            if (current == 'j') 
-                continue; // Ignores letter j whenever it appears in the keyword.
+            if (current == 'j')
+                continue;  // Ignores letter j whenever it appears in the keyword.
             for (int j = 0; j < Keyword.length(); j++)
             {
                 if (current == Keyword.charAt(j))
                 {
-                    Next = false;
+                    flag = false;
                     break;
                 }
             }
-            if (Next)
+            if (flag)
                 Key = Key + current; // Shows how keyword applies to the alphabet without repeated letters.
-            Next = true;
+            flag = true;
         }
         //System.out.println(Key);
         
         matrix();
-        
-    }private void matrix() //Shows the created matrix.
+    }
+ 
+    private void matrix() //Shows the created matrix.
     {
         int counter = 0;
         for (int i = 0; i < 5; i++)
@@ -108,7 +110,7 @@ public class PlayfairCipherEncrypt
         int counter = 0;
         for (int i = 0; i < size / 2; i++)
         {
-            x[i] = Plaintext.substring(counter, counter + 2);  //Divides characters into pairs.
+            x[i] = Plaintext.substring(counter, counter + 2); //Divides characters into pairs.
             counter = counter + 2;
         }
         return x;
@@ -134,10 +136,10 @@ public class PlayfairCipherEncrypt
         return key;
     }
  
-    public String encryptMessage(String Source)
+     public String decryptMessage(String Code)
     {
-        String src_arr[] = DivPair(Source);
-        String Ciphert = new String();
+        String Plaint = new String();
+        String src_arr[] = DivPair(Code);
         char a;
         char b;
         int row[] = new int[2];
@@ -148,28 +150,27 @@ public class PlayfairCipherEncrypt
             b = src_arr[i].charAt(1);
             row = GetDimensions(a);
             col = GetDimensions(b);
-            
-            if (row[0] == col[0]) // if the characters are on the same row, then select the two characters to the right of each
+            if (row[0] == col[0]) //if the characters are on the same row, then select the two characters to the left of each
             {
-                if (row[1] < 4)
-                    row[1]++;
+                if (row[1] > 0)
+                    row[1]--;
                 else
-                    row[1] = 0;
-                if (col[1] < 4)
-                    col[1]++;
+                    row[1] = 4;
+                if (col[1] > 0)
+                    col[1]--;
                 else
-                    col[1] = 0;
+                    col[1] = 4;
             }
-            else if (row[1] == col[1]) // else if the characters are on the same column, then select the two characters below
+            else if (row[1] == col[1]) // else if the characters are on the same column, then select the two characters above
             {
-                if (row[0] < 4)
-                    row[0]++;
+                if (row[0] > 0)
+                    row[0]--;
                 else
-                    row[0] = 0;
-                if (col[0] < 4)
-                    col[0]++;
+                    row[0] = 4;
+                if (col[0] > 0)
+                    col[0]--;
                 else
-                    col[0] = 0;
+                    col[0] = 4;
             }
             else // else the two characters are in different rows and columns, so create a square using the two points,
     			// and select the two characters that create the two other points.
@@ -178,25 +179,25 @@ public class PlayfairCipherEncrypt
                 row[1] = col[1];
                 col[1] = temp;
             }
-            Ciphert = Ciphert + mat_array[row[0]][row[1]]
+            Plaint = Plaint + mat_array[row[0]][row[1]]
                     + mat_array[col[0]][col[1]];
         }
-        return Ciphert;
+        return Plaint;
     }
- 
+    
     public static void main(String[] args)
     {
-        PlayfairCipherEncrypt x = new PlayfairCipherEncrypt();
+        PlayFairDecrypt x = new PlayFairDecrypt();
         Scanner sc = new Scanner(System.in);
         System.out.println("Enter key: ");
         String keyword = sc.next();
         x.setKey(keyword);
         x.KeyGen();
-        System.out.println("Enter plaintext: ");
+        System.out.println("Enter ciphertext: ");
         String key_input = sc.next();
         if (key_input.length() % 2 == 0)
         {
-            System.out.println("Encryption: " + x.encryptMessage(key_input));
+            System.out.println("Decryption: " + x.decryptMessage(key_input));
             
         }
         else
