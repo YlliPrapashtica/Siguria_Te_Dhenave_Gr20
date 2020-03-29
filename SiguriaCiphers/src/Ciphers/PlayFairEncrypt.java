@@ -134,75 +134,70 @@ public class PlayFairEncrypt
         return key;
     }
  
-    public String encryptMessage(String Source)
+    public String encryptPlayfair(String Source)
     {
         String src_arr[] = DivPair(Source);
-        String Ciphert;
+        String Ciphert = "";
         char a;
         char b;
-        int row[] = new int[2];
-        int col[] = new int[2];
-        for (int i = 0; i < src_arr.length; i++)
-        {
-            a = src_arr[i].charAt(0);
-            b = src_arr[i].charAt(1);
-            row = GetDimensions(a);
-            col = GetDimensions(b);
-            
-            if (row[0] == col[0]) // if the characters are on the same row, then select the two characters to the right of each
-            {
-                if (row[1] < 4)
-                    row[1]++;
-                else
-                    row[1] = 0;
-                if (col[1] < 4)
-                    col[1]++;
-                else
-                    col[1] = 0;
-            }
-            else if (row[1] == col[1]) // else if the characters are on the same column, then select the two characters below
-            {
-                if (row[0] < 4)
-                    row[0]++;
-                else
-                    row[0] = 0;
-                if (col[0] < 4)
-                    col[0]++;
-                else
-                    col[0] = 0;
-            }
-            else // else the two characters are in different rows and columns, so create a square using the two points,
-    			// and select the two characters that create the two other points.
-            {
-                int temp = row[1];
-                row[1] = col[1];
-                col[1] = temp;
-            }
-            Ciphert = Ciphert + mat_array[row[0]][row[1]]
-                    + mat_array[col[0]][col[1]];
-        }
-        return Ciphert;
-    }
- 
-    public static void main(String[] args)
-    {
-        PlayFairEncrypt x = new PlayFairEncrypt();
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Enter key: ");
-        String keyword = sc.next();
-        x.setKey(keyword);
-        x.KeyGen();
-        System.out.println("Enter plaintext: ");
-        String key_input = sc.next();
-        if (key_input.length() % 2 == 0)
-        {
-            System.out.println("Encryption: " + x.encryptMessage(key_input));
-            
-        }
-        else
-        {
-            System.out.println("Message length is not even!");
-        }
-        sc.close();
-    }
+		int row[] = new int[2];
+		int col[] = new int[2];
+		for (int i = 0; i < src_arr.length; i++) {
+			a = src_arr[i].charAt(0);
+			b = src_arr[i].charAt(1);
+			row = GetDimensions(a);
+			col = GetDimensions(b);
+
+			if (row[0] == col[0]) // if the characters are on the same row, then select the two characters to the
+									// right of each
+			{
+				if (row[1] < 4)
+					row[1]++;
+				else
+					row[1] = 0;
+				if (col[1] < 4)
+					col[1]++;
+				else
+					col[1] = 0;
+			} else if (row[1] == col[1]) // else if the characters are on the same column, then select the two
+											// characters below
+			{
+				if (row[0] < 4)
+					row[0]++;
+				else
+					row[0] = 0;
+				if (col[0] < 4)
+					col[0]++;
+				else
+					col[0] = 0;
+			} else // else the two characters are in different rows and columns, so create a square
+					// using the two points,
+					// and select the two characters that create the two other points.
+			{
+				int temp = row[1];
+				row[1] = col[1];
+				col[1] = temp;
+			}
+			Ciphert = Ciphert + mat_array[row[0]][row[1]] + mat_array[col[0]][col[1]];
+		}
+		return Ciphert;
+	}
+
+	public static void main(String[] args) {
+		PlayFairEncrypt x = new PlayFairEncrypt();
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Enter key: ");
+		String keyword = sc.next();
+		x.setKey(keyword);
+		x.KeyGen();
+		System.out.println("Enter plaintext: ");
+		String key_input = sc.next();
+		if (key_input.length() % 2 == 0) {
+			System.out.println("Encryption: " + x.encryptPlayfair(key_input));
+
+		} else {
+			System.out.println("Message length is not even!");
+		}
+		sc.close();
+	}
 }
