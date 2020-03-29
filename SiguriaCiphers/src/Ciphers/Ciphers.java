@@ -105,7 +105,7 @@ public class Ciphers {
 
 	static void DisplayBeale(int[] showArray) {
 		for (int i = 0; i < showArray.length; i++) {
-			System.out.print(showArray[i] + " , ");
+			System.out.print(showArray[i]+1 + " , ");
 		}
 		System.out.println("\n\n");
 	}
