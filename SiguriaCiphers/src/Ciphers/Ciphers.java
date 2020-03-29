@@ -14,7 +14,7 @@ public class Ciphers {
 
 		for (int i = 0; i < text.length(); i++) {
 
-			if (Character.isUpperCase(text.charAt(i))) {								// if upper case  +A
+			if (Character.isUpperCase(text.charAt(i))) {	// if upper case  +A
 
 				char ch = (char) (((int) text.charAt(i) + key - 65) % 26 + 65);
 				ecnryptedText.append(ch);												
@@ -35,7 +35,7 @@ public class Ciphers {
 		for (int i = 0; i < ciphertext.length(); ++i) {
 			ch = ciphertext.charAt(i);
 
-			if (ch >= 'a' && ch <= 'z') {										//if lower case heke key
+			if (ch >= 'a' && ch <= 'z') {	//if lower case heke key
 				ch = (char) (ch - key);
 
 				if (ch < 'a') {
@@ -43,7 +43,7 @@ public class Ciphers {
 				}
 
 				decryptedMessage += ch;
-			} else if (ch >= 'A' && ch <= 'Z') {								// if upper case heke key
+			} else if (ch >= 'A' && ch <= 'Z') {	// if upper case heke key
 				ch = (char) (ch - key);
 
 				if (ch < 'A') {
@@ -70,10 +70,10 @@ public class Ciphers {
 	// -------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	static int[] EncryptBeale(String message, String book) {
-		int[] output = new int[message.length()];								// ruhet output qe del
-		char[] bookArr = book.toUpperCase().toCharArray();						// kthen book.txt ne karaktere dhe Uppercase
+		int[] output = new int[message.length()];	// ruhet output qe del
+		char[] bookArr = book.toUpperCase().toCharArray();	// kthen book.txt ne karaktere dhe Uppercase
 
-		for (int i = 0; i < message.length(); i++) {							//krejt shkronjat e tekstit krahasohen dhe zevendsohen me pozitat ne liber
+		for (int i = 0; i < message.length(); i++) {	//krejt shkronjat e tekstit krahasohen dhe zevendsohen me pozitat ne liber
 			for (int j = 0; j < bookArr.length; j++) {
 
 				if (bookArr[j] == message.charAt(i)) {
@@ -98,20 +98,20 @@ public class Ciphers {
 				}
 			}
 		}
-		return new String(plaintextArr);				//i bon krejt chars bashke ne nje string
+		return new String(plaintextArr);    //i bon krejt chars bashke ne nje string
 	}
 
 	static void DisplayBeale(int[] showArray) {
 		for (int i = 0; i < showArray.length; i++) {
-			System.out.print(showArray[i] + 1 + " , ");				// printon ne menyre me te mire pjesen e enkriptuar e jo new line pas qdo numer
+			System.out.print(showArray[i] + 1 + " , ");	// printon ne menyre me te mire pjesen e enkriptuar e jo new line pas qdo numer
 		}
 		System.out.println("\n\n");
 	}
 
 	public static String readFileAsString(String fileName) throws Exception {
 		String file;
-		String currentPath = System.getProperty("user.dir").toString();    					//  pasi qe ndrron Directory zakonisht prej pc ne pc, e merr ate aktualen
-		file = new String(Files.readAllBytes(Paths.get(currentPath, fileName.concat(".txt")))); 		// nuk ka nevoje me e shenu book.txt, por vetem book
+		String currentPath = System.getProperty("user.dir").toString();    //  pasi qe ndrron Directory zakonisht prej pc ne pc, e merr ate aktualen
+		file = new String(Files.readAllBytes(Paths.get(currentPath, fileName.concat(".txt"))));   // nuk ka nevoje me e shenu book.txt, por vetem book
 		return file;
 	}
 
@@ -249,8 +249,8 @@ public class Ciphers {
 					col[1]++;
 				else
 					col[1] = 0;
-			} else if (row[1] == col[1]) // else if the characters are on the same column, then select the two
-											// characters below
+			} else if (row[1] == col[1]) // else if the characters are on the same column, then select the two characters below
+											
 			{
 				if (row[0] < 4)
 					row[0]++;
@@ -321,7 +321,7 @@ public class Ciphers {
 	}
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-	public static void main(String[] args) throws Exception {                       // Mundet me Throw Exception te Beale kur e lyp filea
+	public static void main(String[] args) throws Exception {    // Mundet me Throw Exception te Beale kur e lyp files
 
 		if (args[0].equalsIgnoreCase("ceasar")) {
 			if (args[1].equalsIgnoreCase("e") || (args[1].equalsIgnoreCase("encrypt"))) {
@@ -402,9 +402,9 @@ public class Ciphers {
 						"-----------------------------------------------------------------------------------------------------------------");
 
 				String message = args[3];												//
-				String[] messageSplit = message.split(" , ");							// Pasi qe mesazhi nga cmd na vjen si String, neve na duhet te jete nje
-				int[] encrypted = new int[messageSplit.length];							//	int array per t'iu pershtatur kodit. Pra ketu vjen si String dhe
-				for (int i = 0; i < messageSplit.length; i++) {							//  ndahet ne String array me delimiter ' , ' dhe iu shtohet
+				String[] messageSplit = message.split(" , ");	// Pasi qe mesazhi nga cmd na vjen si String, neve na duhet te jete nje
+				int[] encrypted = new int[messageSplit.length];	 // int array per t'iu pershtatur kodit. Pra ketu vjen si String dhe
+				for (int i = 0; i < messageSplit.length; i++) {	 //  ndahet ne String array me delimiter ' , ' dhe iu shtohet
 																						// int array qe na duhet.
 					encrypted[i] = Integer.parseInt(messageSplit[i]);
 					//	Per me parse nga String ne int pra nevojitet ky kod.
