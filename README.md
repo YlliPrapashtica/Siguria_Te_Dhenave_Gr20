@@ -22,8 +22,8 @@ Output: ATTACK
 https://github.com/AhmedOthman95/playfair-algorithm/blob/master/PlayfairCipherEncryption.java
 
 The encryption Algorithm consists of 2 steps:
-Generate the key Matrix(5Ã—5):
-The key square is a 5Ã—5 grid of alphabets that acts as the key for encrypting the plaintext.
+Generate the key Matrix(5x5):
+The key square is a 5x5 grid of letters that acts as the key for encrypting the plaintext.
 Each of the 25 alphabets must be unique and one letter of the alphabet (usually J) is omitted from the table (as the table can hold only 25 letters).
 If the plaintext contains J, then it is replaced by I.
 The initial alphabets in the key square are the unique alphabets of the key in the order in which they appear followed by the remaining letters of the alphabet in order.
