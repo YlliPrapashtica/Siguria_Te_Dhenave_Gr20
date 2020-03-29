@@ -85,7 +85,7 @@ public class PlayFairEncrypt
                 text = text + plaintxt.charAt(tmp);
         }
         len = text.length();
-        for (i = 0; i < len; i = i + 2) //If len-1, adds an x at the end of the keyword id odd.
+        for (i = 0; i < len-1; i = i + 2)
         {
             if (text.charAt(i + 1) == text.charAt(i))
             {
@@ -192,12 +192,7 @@ public class PlayFairEncrypt
 		x.KeyGen();
 		System.out.println("Enter plaintext: ");
 		String key_input = sc.next();
-		if (key_input.length() % 2 == 0) {
-			System.out.println("Encryption: " + x.encryptPlayfair(key_input));
-
-		} else {
-			System.out.println("Message length is not even!");
-		}
+		System.out.println("Encryption: " + x.encryptPlayfair(key_input));
 		sc.close();
 	}
 }
