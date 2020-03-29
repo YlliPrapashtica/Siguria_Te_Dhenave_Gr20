@@ -26,21 +26,21 @@ public class Ciphers {
 	public static String DecryptCeasar(String ciphertext, int key) {
 
 		String decryptedMessage = "";
+		decryptedMessage=decryptedMessage.toUpperCase();
 		char ch;
 
 		for (int i = 0; i < ciphertext.length(); ++i) {
 			ch = ciphertext.charAt(i);
 			
-
 			if (ch >= 'a' && ch <= 'z') {
 				ch = (char) (ch - key);
 
-			if (ch < 'a') {
+				if (ch < 'a') {
 					ch = (char) (ch + 'z' - 'a' + 1);
 				}
-			
+
 				decryptedMessage += ch;
-			if (ch >= 'A' && ch <= 'Z') {
+			} else if (ch >= 'A' && ch <= 'Z') {
 				ch = (char) (ch - key);
 
 				if (ch < 'A') {
@@ -50,11 +50,10 @@ public class Ciphers {
 				decryptedMessage += ch;
 			} else {
 				decryptedMessage += ch;
+			}
 		}
 
-		
-		}}
-			return (decryptedMessage);
+		return (decryptedMessage);
 	}
 
 	public static void BruteForceCeasar(String cipherText) {
@@ -71,7 +70,7 @@ public class Ciphers {
 
 		for (int i = 0; i < message.length(); i++) {
 			for (int j = 0; j < bookArr.length; j++) {
-
+				
 				if (bookArr[j] == message.charAt(i)) {
 					output[i] = j;
 					break;
@@ -87,8 +86,9 @@ public class Ciphers {
 
 		for (int i = 0; i < encrypted.length; i++) {
 			for (int j = 0; j < bookArr.length; j++) {
-				if (j == encrypted[i]) {
-					plaintextArr[i] = bookArr[j];
+				if (j == encrypted[i]-1) { 											//-1 se nuk e merr Shkronjen e pare for some reason
+					
+					plaintextArr[i] = bookArr[j];									// replace krejt shkronjat e enkriptume
 					break;
 				}
 			}
@@ -96,21 +96,21 @@ public class Ciphers {
 		return new String(plaintextArr);
 	}
 
-	static void DisplayBeale(int[] showArray) {
+	static void DisplayBeale (int[] showArray)
+	{
 		for (int i = 0; i < showArray.length; i++) {
-			System.out.print(showArray[i] + 1 + " , ");
+			System.out.print(showArray[i] + " , ");
 		}
 		System.out.println("\n\n");
 	}
-
 	public static String readFileAsString(String fileName) throws Exception {
 		String file;
-		file = new String(Files.readAllBytes(Paths.get(
-				"D:\\Ylli\\Eclipse\\Siguria_Te_Dhenave_Gr20\\SiguriaCiphers\\src\\Ciphers", fileName.concat(".txt"))));
+		file = new String(Files.readAllBytes(Paths.get("D:\\Ylli\\Eclipse\\Siguria_Te_Dhenave_Gr20\\SiguriaCiphers\\src\\Ciphers", fileName.concat(".txt"))));
 		return file;
 	}
 
-	public static void main(String[] args) throws Exception {
+
+	public static void main(String[] args)  throws Exception{
 
 		if (args[0].equalsIgnoreCase("ceasar")) {
 			if (args[1].equalsIgnoreCase("e") || (args[1].equalsIgnoreCase("encrypt"))) {
@@ -129,30 +129,31 @@ public class Ciphers {
 				int key = Integer.parseInt(args[3]);
 				System.out.println("Decrypted Message = " + DecryptCeasar(text, key));
 				System.out.println("\n");
-				BruteForceCeasar(EncryptCeasar(text, key).toString()); // DERI KETU EKZEKUTOHET CEASAR
+				BruteForceCeasar(EncryptCeasar(text, key).toString());						// DERI KETU EKZEKUTOHET CEASAR
 			} else {
 				System.out.println("Error : Wrong Command name. Try entering it again ! ");
 			}
+			
 
 		} else if (args[0].equalsIgnoreCase("playfair")) {
 			if (args[1].equalsIgnoreCase("e") || (args[1].equalsIgnoreCase("encrypt"))) {
-
-			} else if (args[1].equalsIgnoreCase("d") || (args[1].equalsIgnoreCase("decrypt"))) {
-
-			} else {
+				
+			}else if (args[1].equalsIgnoreCase("d") || (args[1].equalsIgnoreCase("decrypt"))) {
+				
+			}else {
 				System.out.println("Error : Wrong Command name. Try entering it again ! ");
-			} // DERI KETU EKZEKUTOHET PLAYFAIR
+			}																						// DERI KETU EKZEKUTOHET PLAYFAIR
 
+			
 		} else if (args[0].equalsIgnoreCase("beale") || (args[0].equalsIgnoreCase("book"))) {
 			if (args[1].equalsIgnoreCase("e") || (args[1].equalsIgnoreCase("encrypt"))) {
-
+				
 				String file = readFileAsString(args[2]);
-				System.out.println(
-						"-----------------------------------------------------------------------------------------------------------------");
-				System.out.println("\n" + file + "\n");
+				System.out.println("-----------------------------------------------------------------------------------------------------------------");
+				System.out.println("\n"+file+"\n");
 
-				System.out.println(
-						"-----------------------------------------------------------------------------------------------------------------");
+				System.out.println("-----------------------------------------------------------------------------------------------------------------");
+
 
 				String message = args[3];
 				String book = file;
@@ -161,32 +162,43 @@ public class Ciphers {
 				System.out.println("Encrypted Message :");
 				DisplayBeale(encrypted);
 
-			} else if (args[1].equalsIgnoreCase("d") || (args[1].equalsIgnoreCase("decrypt"))) {
-
+				
+			}else if (args[1].equalsIgnoreCase("d") || (args[1].equalsIgnoreCase("decrypt"))) {
+				
 				String file = readFileAsString(args[2]);
-				System.out.println(
-						"-----------------------------------------------------------------------------------------------------------------");
-				System.out.println("\n" + file + "\n");
+				System.out.println("-----------------------------------------------------------------------------------------------------------------");
+				System.out.println("\n"+file+"\n");
 
-				System.out.println(
-						"-----------------------------------------------------------------------------------------------------------------");
-
-				String message = args[3];
+				System.out.println("-----------------------------------------------------------------------------------------------------------------");
+				
+				String message = args[3]; 
+				String [] messageSplit = message.split(" , ");
+				int[] encrypted = new int[messageSplit.length] ;
+				for(int i = 0; i < messageSplit.length; i++) {
+				
+				encrypted[i] =Integer.parseInt(messageSplit[i]);
+				System.out.println(encrypted[i]);
+				}
 				String book = file;
-				int[] encrypted = EncryptBeale(message.toUpperCase(), book);
+				
 				String decrypted = DecryptBeale(encrypted, book);
 				System.out.println("Decrypted Message : ");
 				System.out.println(decrypted);
 				System.out.println("\n\n");
 
-			} else {
-				System.out.println("Error : Wrong Command name. Try entering it again ! ");
-			} // DERI KETU EKZEKUTOHET BEALE
 
+			}else {
+				System.out.println("Error : Wrong Command name. Try entering it again ! ");
+			}																											// DERI KETU EKZEKUTOHET BEALE
+			
 		} else {
 			System.out.println("Error : Wrong Command name. Try entering it again ! ");
 		}
 
+	} {
+		
 	}
 
+	
+	
 }

@@ -137,7 +137,7 @@ public class PlayFairEncrypt
     public String encryptMessage(String Source)
     {
         String src_arr[] = DivPair(Source);
-        String Ciphert = new String();
+        String Ciphert;
         char a;
         char b;
         int row[] = new int[2];
