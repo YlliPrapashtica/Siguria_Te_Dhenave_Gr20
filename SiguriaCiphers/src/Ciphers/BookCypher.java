@@ -5,22 +5,7 @@ import java.nio.file.Paths;
 
 public class BookCypher{
 
-	public static void main(String[] args) throws Exception {
-		String file = readFileAsString(args[3]);
-		System.out.println(file);
-
-		String message = args[4];
-		String book = file;
-
-		int[] encrypted = Encrypt(message.toUpperCase(), book);
-		System.out.println("Encrypted Message :");
-		Display(encrypted);
-
-		String decrypted = Decrypt(encrypted, book);
-		System.out.println("Decrypted Message : ");
-		System.out.println(decrypted);
-	}
-
+	
 	static int[] Encrypt(String message, String book) {
 		int[] output = new int[message.length()];
 		char[] bookArr = book.toUpperCase().toCharArray();
@@ -57,11 +42,11 @@ public class BookCypher{
 		for (int i = 0; i < showArray.length; i++) {
 			System.out.print(showArray[i]+1 + " , ");
 		}
-		System.out.println();
+		System.out.println("\n\n");
 	}
 	public static String readFileAsString(String fileName) throws Exception {
 		String file;
-		file = new String(Files.readAllBytes(Paths.get(System.getProperty("user.dir"), fileName)));
+		file = new String(Files.readAllBytes(Paths.get("D:\\Ylli\\Eclipse\\Siguria_Te_Dhenave_Gr20\\SiguriaCiphers\\src\\Ciphers", fileName.concat(".txt"))));
 		return file;
 	}
 }
