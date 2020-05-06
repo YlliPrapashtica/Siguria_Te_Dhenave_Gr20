@@ -27,13 +27,20 @@ Delete-User Command
 Deletes already created users.
 
 Export-Key Command
-Exports keys from keys directory into another file
+Exports keys from keys directory into another file.
+<P>+EZth9...</P>
+<Q>zG6WRR...</Q>
+<DP>khmvvu...</DP>
+<DQ>IjdMLW...</DQ>
+<InverseQ>kX+viS...</InverseQ>
+<D>IOrUqe...</D>
+Are not applied to the code.
 
 Import-Key Command
 Imports keys from other files into keys directory.
 Nëse shtegu <path> fillon me http:// ose https://, atëherë do të dërgohet një GET request në
 URL <path> dhe do të merret trupi i përgjigjes si vlera e çelësit.
-Request was not completed.
+Request was not fully completed.
 
 Write-Message Command
 readline
