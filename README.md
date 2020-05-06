@@ -1,5 +1,7 @@
 # Siguria_Te_Dhenave_Gr20
-
+ *******IMPORTANT NOTE AT THE BOTTOM*****
+ 
+ 
 ~RSA Algorithm
 RSA (Rivest, Shamir and Adleman) algorithm is asymmetric cryptography algorithm. Asymmetric actually means that it works on two different keys i.e. Public Key and Private Key.
 The Public Key is given to everyone and it is used for encrypting messages, the Private key is kept private, which is used for decryption..
