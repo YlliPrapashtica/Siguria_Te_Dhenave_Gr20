@@ -62,4 +62,6 @@ getPrivFromFile
 IN ORDER TO RUN THE PROJECT, SOME EXTRA FILES NEED TO BE DOWNLOADED:
         1.THE BOUNCYCASTLE JAR THROUGH THE FOLLOWING LINK -- https://www.bouncycastle.org/latest_releases.html
         1.1. INSTRUCTIONS TO INSTALL BOUNCYCASTLE https://justrocketscience.com/post/install-bouncy-castle/
+        2. INSTALL LOGGER LIB THROUGH LINK https://logging.apache.org/log4j/2.x/download.html
+        2.1 INSTRUCTIONS FOR LOGGER LIB INSTALLATION https://www.tutorialspoint.com/log4j/log4j_installation.htm
         
