@@ -2,19 +2,23 @@ package com.createuser;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
+import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
@@ -27,7 +31,6 @@ import java.util.stream.Stream;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.log4j.Logger;
@@ -35,9 +38,9 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 
-public class Main {
+public class Users {
 
-	protected final static Logger LOGGER = Logger.getLogger(Main.class);
+	protected final static Logger LOGGER = Logger.getLogger(Users.class);
 
 	public static final int KEY_SIZE = 1024;
 	private static byte[] DESKey;
@@ -45,27 +48,78 @@ public class Main {
 
 	public static void main(String[] args) throws Exception {
 
-		String name = "Ylli332332_3";
-		createUser(name);
-
-		String encryptedText = writeMessage(name);
-		System.out.println(encryptedText);
-		decryptDes(encryptedText);
-	}
+		
+			if(args[0] == "create-user") {
+				System.out.println("User has been created!");
+				createUser(args[1]);
+					
+			} else if(args[0] == "delete-user") {
+				deleteUser(args[1]);
+				
+			} else if(args[0] == "export-key") {
+				if(args[3] !=null) {
+					exportKey(args[1], args[2],args[3]);
+				}else {
+					printKey(args[1],args[2]);
+					
+				}
+				
+			} else if(args[0] == "import-key") {
+				importKey(args[1], args[2]);
+				
+				
+			} else if(args[0] == "write-message") {
+		
+				if(args[3] !=null) {
+					writeMessage(args[1], args[2],args[3]);
+				}else {
+				String encryptedText = writeMessage(args[1], args[2]);
+				System.out.println(encryptedText);
+				}
+				
+			} else if(args[0] == "read-message") {
+				
+					decryptDes(args[1]);
+				
+				
+			} else {
+				System.out.println("Wrong command name! ");
+			}
+			
+	
+			
+	}	
 
 	private static KeyPair generateRSAKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException {
 		KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
 		generator.initialize(KEY_SIZE);
 
 		KeyPair keyPair = generator.generateKeyPair();
-		LOGGER.info("RSA key pair generated.");
+		
 		return keyPair;
 	}
 
-	private static String writeMessage(String name) throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, URISyntaxException, Exception{
-		return(base64Name(name) + " . " + base64IV() + " . " + encryptRSA(generateIV(), getpubKeyFromFile(name))+ " . " + encryptDes(name, "Yll Baba i Programimit"));
+	private static void writeMessage(String name, String message, String url)
+			throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, URISyntaxException, Exception {
+		
+		File file = new File(url+name+".ecnrypted.txt");
+		
+		FileWriter myWriter = new FileWriter(file);
+	    myWriter.write(base64Name(name) + " . " + base64IV() + " . " + encryptRSA(generateIV(), getpubKeyFromFile(name))
+		+ " . " + encryptDes(name, message));
+	    myWriter.close();
+	    System.out.println("Successfully wrote to the file.");
+		
 	}
-	
+
+	private static String writeMessage(String name, String message)
+			throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, URISyntaxException, Exception {
+		
+		
+		return (base64Name(name) + " . " + base64IV() + " . " + encryptRSA(generateIV(), getpubKeyFromFile(name))
+				+ " . " + encryptDes(name, message));
+	}
+
 	private static void writePemFile(Key key, String description, String filename)
 			throws FileNotFoundException, IOException {
 		PemFile pemFile = new PemFile(key, description);
@@ -74,25 +128,97 @@ public class Main {
 		LOGGER.info(String.format("%s successfully writen in file %s.", description, filename));
 	}
 
-	private static void exportKey(File file, String UrL) throws IOException {
-
-		Path source = Paths.get(file.toString());
-		Path newdir = Paths.get("C:\\Users\\IFES Yoga\\Downloads\\RSA Create-User\\" + UrL);
-		Files.move(source, newdir);
+	private static void printKey(String name, String pubPriv) throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, URISyntaxException{
+		File filePub = new File("C:/Users/me/Downloads/RSA Create-User/keys/" + name + ".pub.pem");
+		File filePriv = new File("C:/Users/me/Downloads/RSA Create-User/keys/" + name + ".pem");
+	
+		if(!filePub.exists() || !filePriv.exists()) {
+			System.out.println("File doesnt exist!");
+			System.exit(0);
+			
+		}
+		if(pubPriv == "public") {
+			RSAPublicKey pubKey = (RSAPublicKey) getpubKeyFromFile(name);
+			
+			BigInteger modulus = pubKey.getModulus();
+			BigInteger publicExponent = pubKey.getPublicExponent();
+			
+			System.out.println("Public key content: ");
+			System.out.println("Modulus: "+modulus);
+			System.out.println("Exponent: "+publicExponent);
+		}
+		else if(pubPriv == "private") {
+			RSAPrivateKey privKey = (RSAPrivateKey) getprivKeyFromFile(name);
+			
+			BigInteger modulus = privKey.getModulus();
+			BigInteger publicExponent = privKey.getPrivateExponent();
+			
+			
+			
+			System.out.println("Private key content: ");
+			System.out.println("Modulus: "+modulus);
+			System.out.println("Exponent: "+publicExponent);
+		}
+	}
+	
+	private static void exportKey(String file, String UrL, String PubPriv) throws IOException {
+		
+		File filePub = new File("C:/Users/me/Downloads/RSA Create-User/keys/" + file + ".pub.pem");
+		File filePriv = new File("C:/Users/me/Downloads/RSA Create-User/keys/" + file + ".pem");
+	
+		if(!filePub.exists() || !filePriv.exists()) {
+			System.out.println("File doesnt exist!");
+			System.exit(0);
+			
+		}
+			if(PubPriv=="public") {
+				Path source = Paths.get("C:\\Users\\me\\Downloads\\RSA Create-User\\keys/"+file+".pub.pem");
+				Path newdir = Paths.get(UrL+".pub.pem");
+				Files.move(source, newdir);
+				System.out.println("File succesfully exported!");
+			}else if(PubPriv == "private") {
+				Path source = Paths.get("C:\\Users\\me\\Downloads\\RSA Create-User\\keys/"+file+".pem");
+				Path newdir = Paths.get(UrL+".pem");
+				Files.move(source, newdir);
+				System.out.println("File succesfully exported!");
+			}else {
+				System.out.println("Failed to export file!");
+			}
+			
+			
 	}
 
-	private static void importKey(File file, String UrL) throws IOException {
-
-		Path source3 = Paths.get(file.toString());
-		Path newdir3 = Paths.get("C:\\Users\\IFES Yoga\\Downloads\\RSA Create-User\\" + UrL);
-		Files.move(source3, newdir3);
+	private static void importKey(String name, String UrL) throws IOException, NoSuchAlgorithmException, NoSuchProviderException {
+		
+		File filePub = new File(UrL+"/"+  name + ".pub.pem");
+		File filePriv = new File(UrL +"/"+ name + ".pem");
+	
+		if(!filePub.exists() || !filePriv.exists()) {
+			System.out.println("File doesnt exist!");
+			System.exit(0);
+			
+		}
+		
+		if(!UrL.contains(".pub")) {
+			deleteUser(name);
+			createUser(name);
+		}else if(UrL.contains("pub")){
+			Path source = Paths.get("C:\\Users\\me\\Downloads\\RSA Create-User\\keys/"+name+".pem");
+			Path newdir = Paths.get(UrL);
+			Files.move(newdir,source);
+			System.out.println("File succesfully imported!");
+		}else {
+			System.out.println("Failed to import file!");
+		}
+		
+		
 	}
 
 	private static void createUser(String name)
 			throws FileNotFoundException, IOException, NoSuchAlgorithmException, NoSuchProviderException {
 
 		Security.addProvider(new BouncyCastleProvider());
-		if(name.matches("[a-zA-Z0-9_]*")) {
+		if (name.matches("[a-zA-Z0-9_]*")) {
 			File f = new File("keys/" + name + ".pem");
 			if (f.exists()) {
 				System.out.println("User's RSA KEY Exists");
@@ -104,22 +230,29 @@ public class Main {
 				writePemFile(priv, "RSA PRIVATE KEY", "keys/" + name + ".pem");
 				writePemFile(pub, "RSA PUBLIC KEY", "keys/" + name + ".pub.pem");
 			}
-		}else {
+		} else {
 			System.out.println("Name should only contain a-z, A-Z, 0-9 or _");
 		}
-		
+
 	}
 
 	private static void deleteUser(String name) {
 
-		File file = new File("C:\\Users\\IFES Yoga\\Downloads\\RSA Create-User\\keys/" + name + ".pub.pem");
-		File file3 = new File("C:\\Users\\IFES Yoga\\Downloads\\RSA Create-User\\keys/" + name + ".pem");
+		File filePub = new File("C:/Users/me/Downloads/RSA Create-User/keys/" + name + ".pub.pem");
+		File filePriv = new File("C:/Users/me/Downloads/RSA Create-User/keys/" + name + ".pem");
 
-		if (file.delete() && file3.delete()) {
-			System.out.println("Deleted file:" + name);
-			System.out.println("Deleted file:" + name + ".pub");
-		} else {
-			System.out.println("Failed to delete the file");
+		if (filePub.delete() ) {
+			if(filePriv.delete()) {
+				System.out.println("Deleted file:" + name+".pem");
+				System.out.println("Deleted file:" + name + ".pub.pem");
+			}else {
+				System.out.println("Deleted file:" + name + ".pub.pem");
+			}
+		} else if(filePriv.delete()){
+			System.out.println("Deleted file:" + name+".pem");
+		}
+		else {
+			System.out.println("Failed to delete the files!");
 		}
 	}
 
@@ -128,7 +261,7 @@ public class Main {
 		SecureRandom random = new SecureRandom();
 		byte iv[] = new byte[8]; // generate random 8 byte IV.
 		random.nextBytes(iv);
-		
+
 		return iv;
 	}
 
@@ -154,6 +287,18 @@ public class Main {
 		return Base64.getEncoder().encodeToString(iv);
 	}
 
+	public static String encryptRSAText (String rawText, PublicKey publicKey) throws IOException, GeneralSecurityException {
+        Cipher cipher = Cipher.getInstance ("RSA");
+        cipher.init (Cipher.ENCRYPT_MODE, publicKey);
+        return Base64.getEncoder().encodeToString(cipher.doFinal (rawText.getBytes ("UTF-8")));
+    }
+	
+	public static byte[] decryptRSAText (String string, PrivateKey privateKey) throws IOException, GeneralSecurityException {
+        Cipher cipher = Cipher.getInstance ("RSA");
+        cipher.init (Cipher.DECRYPT_MODE, privateKey);
+        return (cipher.doFinal (Base64.getDecoder().decode(string)));
+    }
+	
 	private static PublicKey getpubKeyFromFile(String name)
 			throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, URISyntaxException {
 		String filePath = "C:/Users/me/Downloads/RSA Create-User/keys/" + name + ".pub.pem";
@@ -180,52 +325,36 @@ public class Main {
 		return contentBuilder.toString();
 	}
 
-	private static RSAPrivateKey getprivKeyFromFile(String name)
+	private static RSAPrivateKey getprivKeyFromFile(String decodedUser)
 			throws NoSuchAlgorithmException, IOException, URISyntaxException, InvalidKeySpecException {
-	
-		String filePath = "C:/Users/me/Downloads/RSA Create-User/keys/" + name + ".pem";
-		String keypriv = readLine(filePath);
 
-		PemObject pem = new PemReader(new StringReader(keypriv)).readPemObject();
-		byte[] pubKeyBytes = pem.getContent();
-		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-		X509EncodedKeySpec pubSpec = new X509EncodedKeySpec(pubKeyBytes);
-		RSAPrivateKey privKey = (RSAPrivateKey) keyFactory.generatePrivate(pubSpec);
+		String filePath = "C:/Users/me/Downloads/RSA Create-User/keys/" + decodedUser + ".pem";
 
+		RSAPrivateKey privKey = (RSAPrivateKey) PemUtils.readPrivateKeyFromFile(filePath, "RSA");
 		return privKey;
+
 	}
 
-	private static String decryptRSA(byte[] buffer, String name) {
-	    try {
-	        Cipher rsa;
-	        rsa = Cipher.getInstance("RSA");
-	        rsa.init(Cipher.DECRYPT_MODE, getprivKeyFromFile(name));
-	        byte[] utf8 = rsa.doFinal(buffer);
-	        return new String(utf8, "UTF8");
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
-	    return null;
-	}
+	private static void getDESkey(String name)
+			throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, URISyntaxException, Exception {
 
-	
-	
-	private static  void getDESkey(String name) throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, URISyntaxException, Exception {
-		
 		byte[] decodedKey = Base64.getDecoder().decode(encryptRSA(generateIV(), getpubKeyFromFile(name)));
-		Main.DESKey = decodedKey;
+		Users.DESKey = decodedKey;
 	}
+
 	private static void getSecretDES() {
-		SecretKey originalKey = new SecretKeySpec(Main.DESKey, 0, Main.DESKey.length, "DES");
-		Main.DESSecretKey = originalKey;
-		
+		SecretKey originalKey = new SecretKeySpec(Users.DESKey, 0, Users.DESKey.length, "DES");
+		Users.DESSecretKey = originalKey;
+
 	}
+
 	private static String encryptDes(String name, String message)
 			throws InvalidKeySpecException, IOException, URISyntaxException, Exception {
 		getDESkey(name);
 		getSecretDES();
 		Cipher desCipher;
-
+		
+		message = encryptRSAText(message, getpubKeyFromFile(name));
 		// Create the cipher
 		desCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
 
@@ -240,38 +369,30 @@ public class Main {
 		return Base64.getEncoder().encodeToString(textEncrypted).toString();
 	}
 
-	private static void decryptDes(String cipherText) throws InvalidKeySpecException, IOException, URISyntaxException, Exception {
+	private static void decryptDes(String cipherText)
+			throws InvalidKeySpecException, IOException, URISyntaxException, Exception {
 		String messageSplit[] = cipherText.split(" . ");
 
-		System.out.println(messageSplit[0]);
-		System.out.println(messageSplit[1]);
-		System.out.println(messageSplit[2]);
-		System.out.println(messageSplit[3]);
 		byte[] decodedUser = Base64.getDecoder().decode(messageSplit[0]);
-		System.out.println(new String(decodedUser));
+		System.out.println("Reciever: " + new String(decodedUser));
 
-		byte[] decodedMessage = Base64.getDecoder().decode(messageSplit[0]);
-//		byte[] decodedIV = Base64.getDecoder().decode(messageSplit[1]);
-//		System.out.println(new String(decodedIV));
-//		
-//		byte[] decodedRSAKey = Base64.getDecoder().decode(messageSplit[2]);
-//		System.out.println(new String(decodedRSAKey));
+		byte[] decodedMessage = Base64.getDecoder().decode(messageSplit[3]);
+		Cipher desCipher;
+		// Create the cipher
+		desCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+
+		// Initialize the same cipher for decryption
+		desCipher.init(Cipher.DECRYPT_MODE, DESSecretKey);
+
+		// Decrypt the text
+		byte[] textDecrypted = desCipher.doFinal(decodedMessage);
+		textDecrypted = decryptRSAText(new String(textDecrypted), getprivKeyFromFile(new String(decodedUser)));
 		
-		
-		
-	    Cipher desCipher;
-	    // Create the cipher
-	    desCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+		System.out.println("Text Decryted : " + new String(textDecrypted));
 
-	    //Initialize the same cipher for decryption
-	    desCipher.init(Cipher.DECRYPT_MODE, DESSecretKey);
+		// return textDecrypted.toString();
 
-	    //Decrypt the text
-	    byte[] textDecrypted = desCipher.doFinal(decodedMessage);
-
-	    System.out.println("Text Decryted : " + new String(textDecrypted));
-	    
-	    //return textDecrypted.toString();
-	
 	}
+	
+	
 }
