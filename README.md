@@ -57,3 +57,9 @@ encryptDES
 decryptDES
 decryptRSA
 getPrivFromFile
+
+********IMPORTANT***************
+IN ORDER TO RUN THE PROJECT, SOME EXTRA FILES NEED TO BE DOWNLOADED:
+        1.THE BOUNCYCASTLE JAR THROUGH THE FOLLOWING LINK -- https://www.bouncycastle.org/latest_releases.html
+        1.1. INSTRUCTIONS TO INSTALL BOUNCYCASTLE https://justrocketscience.com/post/install-bouncy-castle/
+        
