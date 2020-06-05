@@ -29,6 +29,7 @@ import java.security.spec.KeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Scanner;
 import java.security.InvalidKeyException;
@@ -50,6 +51,9 @@ import org.json.JSONObject;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.interfaces.JWTVerifier;
 
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -525,7 +529,10 @@ public class Users {
 				importKey(args[1], args[2]);
 				
 				
-			} else if(args[0].equals("write-message")) {
+			}else if(args[0].equals("verify")) {
+				verifyToken(args[1]);
+			}
+			else if(args[0].equals("write-message")) {
 		
 				if(args.length==4) {
 					
@@ -752,35 +759,72 @@ public class Users {
 			RSAPrivateKey privateKey = getprivKeyFromFile(name);
 			try {
 					Algorithm algorithm = Algorithm.RSA256(publicKey, privateKey);
-					
-					String token = JWT.create().withIssuer("auth0").sign(algorithm);
-					System.out.println(token);
+					Calendar date = Calendar.getInstance();
+					long current= date.getTimeInMillis();
+					Date now = new Date();
+					Date expire = new Date(current + 20*60000);
+					String token = JWT.create().withIssuer(name).withIssuedAt(now).withExpiresAt(expire).sign(algorithm);
+					writeToken(token,name);
+					verifyToken(name);
 					} catch (JWTCreationException exception){
 					
 					}
 			
+		}
+	}   
+	
+	private static void writeToken(String token, String name) throws IOException {
 		
-//			Security.addProvider(new BouncyCastleProvider());
-//    		String filePath = "C:/Users/IFES Yoga/Downloads/RSA Create-User/keys/" + name + ".pem";
-//    		SecureRandom secureRandom = new SecureRandom(); //threadsafe
-//    		Base64.Encoder base64Encoder = Base64.getUrlEncoder(); //threadsafe
-//    		PrivateKey privKey = (RSAPrivateKey) PemUtils.readPrivateKeyFromFile(filePath, "RSA");
-//    		Instant now = Instant.now();
-//    		
-//    		String jwt = Jwts.builder()
-//    		        .setIssuedAt(Date.from(now))
-//    		        .setExpiration(Date.from(now.plus(5L, ChronoUnit.MINUTES)))
-//    		        .setIssuer(name)
-//    		        .setId(UUID.randomUUID().toString())
-//    		        .signWith(null, privKey)
-//    		        .compact();
-//
-//    		    byte[] randomBytes = new byte[32];
-//    		    secureRandom.nextBytes(randomBytes);
-//    		    System.out.println("Token: "+base64Encoder.encodeToString(randomBytes));
-    		}
-    		        }
-    		    
+		File file = new File("C:/Users/IFES Yoga/Downloads/RSA Create-User/keys/"+name+".jwt");
+		FileWriter myWriter = new FileWriter(file);
+	    myWriter.write(token);
+	    myWriter.close();
+	    System.out.println("Successfully created the token file.");
+	}
+	
+	private static String readToken(String name) {
+		
+		File file = new File("C:\\Users\\IFES Yoga\\Downloads\\RSA Create-User\\keys/" + name + ".jwt");
+		 String token = readLine(file.toString());
+		 return token;
+		
+	}
+	
+	private static void verifyToken(String name) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, URISyntaxException {
+		
+		if(!name.contains(".")) {
+		RSAPublicKey publicKey = (RSAPublicKey) getpubKeyFromFile(name);
+		RSAPrivateKey privateKey = getprivKeyFromFile(name);
+		try {
+		    Algorithm algorithm = Algorithm.RSA256(publicKey, privateKey);
+		    JWTVerifier verifier = JWT.require(algorithm)
+		        .withIssuer(name).build(); //Reusable verifier instance
+		    DecodedJWT jwt = verifier.verify(readToken(name));
+		    Date expired = jwt.getExpiresAt();
+		    String user = jwt.getIssuer();
+		    System.out.println("User: "+user);
+		    System.out.println("Valid!");
+		    System.out.println("Expiration date: "+expired);
+		} catch (JWTVerificationException exception){
+		    System.out.println("Token not valid!");
+		}
+	}else {
+		RSAPublicKey publicKey = (RSAPublicKey) getpubKeyFromFile(name);
+		RSAPrivateKey privateKey = getprivKeyFromFile(name);
+		try {
+		    Algorithm algorithm = Algorithm.RSA256(publicKey, privateKey);
+		    JWTVerifier verifier = JWT.require(algorithm)
+		        .withIssuer(name).build(); //Reusable verifier instance
+		    DecodedJWT jwt = verifier.verify(name);
+		    Date expired = jwt.getExpiresAt();
+		    String user = jwt.getIssuer();
+		    System.out.println("User: "+user);
+		    System.out.println("Valid!");
+		    System.out.println("Expiration date: "+expired);
+		} catch (JWTVerificationException exception){
+		    System.out.println("Token not valid!");
+	}
+		}}
 		
 	private static void deleteUser(String name) {
 
