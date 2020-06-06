@@ -1,6 +1,22 @@
 # Siguria_Te_Dhenave_Gr20
  *******IMPORTANT NOTE AT THE BOTTOM*****
  
+Skema e ruajtjes së fjalëkalimeve.
+1.Gjenerimi i nje random salt.
+2.Hashing ne baze te salt.
+3.Ruajtja e hashed password, salt ne nje .xml file.
+
+Mënyra e ruajtjes së shënimeve.
+1.Password si .xml.
+2.Tokens si .jwt.
+3.Keys si .pem.
+4.Encrypted text si .txt.
+
+Struktura e tokenëve të lëshuar.
+Tokens jane te ndare ne 3 pjese: 
+1.Header- RSA
+2.Body- Sender, created date, expired date
+3.Signature, me private key
  
 ~RSA Algorithm
 RSA (Rivest, Shamir and Adleman) algorithm is asymmetric cryptography algorithm. Asymmetric actually means that it works on two different keys i.e. Public Key and Private Key.
