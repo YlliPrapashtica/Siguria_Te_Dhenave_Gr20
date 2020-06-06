@@ -22,31 +22,20 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.Signature;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Scanner;
 import java.security.InvalidKeyException;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
-import javax.crypto.Mac;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -55,9 +44,6 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
-
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -65,7 +51,6 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.crypto.tls.SignatureAlgorithm;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
@@ -401,8 +386,6 @@ public class Users {
 
 	public static void main(String[] args) throws Exception {
 		
-	
-		String currentDirectory = System.getProperty("user.dir");
 		if (args[0].equalsIgnoreCase("ceasar")) {
 			if (args[1].equalsIgnoreCase("e") || (args[1].equalsIgnoreCase("encrypt"))) {
 
@@ -529,45 +512,44 @@ public class Users {
 				importKey(args[1], args[2]);
 				
 				
-			}else if(args[0].equals("verify")) {
-				verifyToken(args[1]);
+			}else if(args[0].equals("status")) {
+				if(args.length==3 ) {
+					verifyToken(args[1], args[2]);
+				}else {
+					verifyToken(args[1]);
+				}
 			}
 			else if(args[0].equals("write-message")) {
-		
 				if(args.length==4) {
-					
-					writeMessage(args[1], args[2],args[3]);
-				}else {
+					if(args[3].contains(".")) {
+						writeMessageURL(args[1], args[2],args[3]);
+					}else{
+						String encryptedText = writeMessage(args[1], args[2],args[3]);
+						System.out.println("The encrypted text with token is: \n"+encryptedText);
+						}
+					}
+				else if(args.length==5){
+					writeMessage(args[1], args[2],args[3],args[4]);
+					}
+				else {
 				String encryptedText = writeMessage(args[1], args[2]);
 				System.out.println("The encrypted text is: "+encryptedText);
-				}
-				
-			} else if(args[0].equals("read-message")) {
-				
+				}}
+			 else if(args[0].equals("read-message")) {			
 					decryptDes(args[1]);
-				
-				
-			} else {
+			}else {
 				System.out.println("Wrong command name! ");
 			}
-			
 	}	
 
 	private static KeyPair generateRSAKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException {
 		KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
 		generator.initialize(KEY_SIZE);
-
 		KeyPair keyPair = generator.generateKeyPair();
-		
 		return keyPair;
 	}
 	
-	private static void writePassword(String name, String password) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-		
-		
-	}
-	 
-	private static void writeMessage(String name, String message, String url)
+	private static void writeMessageURL(String name, String message, String url)
 			throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, URISyntaxException, Exception {
 		
 		File file = new File(url+name+".encrypted.txt");
@@ -577,7 +559,6 @@ public class Users {
 		+ " . " + encryptDes(name, message));
 	    myWriter.close();
 	    System.out.println("Successfully created the encrypted text file.");
-		
 	}
 
 	private static String writeMessage(String name, String message)
@@ -588,6 +569,65 @@ public class Users {
 				+ " . " + encryptDes(name, message));
 	}
 
+	private static String writeMessage(String name, String message, String sender)
+			throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, URISyntaxException, Exception {
+	
+			RSAPublicKey publicKey = (RSAPublicKey) getpubKeyFromFile(sender);
+			RSAPrivateKey privateKey = getprivKeyFromFile(sender);
+			try {
+			    Algorithm algorithm = Algorithm.RSA256(publicKey, privateKey);
+			    JWTVerifier verifier = JWT.require(algorithm)
+			        .withIssuer(sender).build(); //Reusable verifier instance
+			    DecodedJWT jwt = verifier.verify(readToken(sender));
+			    Signature sign = Signature.getInstance("SHA256withRSA");
+			      sign.initSign(privateKey);
+			      byte[] bytes = message.getBytes();
+			      sign.update(bytes);
+			      byte[] signature = sign.sign();
+			    String user = jwt.getIssuer();
+			    return (base64Name(name) + " . " + base64IV() + " . " + encryptRSA(Users.rndIV, getpubKeyFromFile(name))
+				+ " . " + encryptDes(name, message) + " . " + base64Name(user) + " . " + base64Signature(signature));
+			} catch (JWTVerificationException exception){
+			    System.out.println("Token not valid!");
+			}
+		return null;
+	}
+	
+	private static String writeMessage(String name, String message, String sender, String url)
+			throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, URISyntaxException, Exception {
+	
+			RSAPublicKey publicKey = (RSAPublicKey) getpubKeyFromFile(sender);
+			RSAPrivateKey privateKey = getprivKeyFromFile(sender);
+			try {
+			    Algorithm algorithm = Algorithm.RSA256(publicKey, privateKey);
+			    JWTVerifier verifier = JWT.require(algorithm)
+			        .withIssuer(sender).build(); //Reusable verifier instance
+			    DecodedJWT jwt = verifier.verify(readToken(sender));
+			    Signature sign = Signature.getInstance("SHA256withRSA");
+			      sign.initSign(privateKey);
+			      byte[] bytes = message.getBytes();
+			      sign.update(bytes);
+			      byte[] signature = sign.sign();
+			    String user = jwt.getIssuer();
+
+			    File file = new File(url+name+"."+sender +".encrypted.txt");
+				
+				FileWriter myWriter = new FileWriter(file);
+			    myWriter.write(base64Name(name) + " . " + base64IV() + " . " + encryptRSA(Users.rndIV, getpubKeyFromFile(name))
+				+ " . " + encryptDes(name, message) + " . " + base64Name(user) + " . " + base64Signature(signature));
+			    myWriter.close();
+			    System.out.println("Successfully created the encrypted text file.");
+			} catch (JWTVerificationException exception){
+			    System.out.println("Token not valid!");
+			}
+		return null;
+	}
+	
+	private static String base64Signature(byte [] signature) { 
+		
+		return Base64.getEncoder().encodeToString(signature);
+	}
+	
 	private static void writePemFile(Key key, String description, String filename)
 			throws FileNotFoundException, IOException {
 		PemFile pemFile = new PemFile(key, description);
@@ -704,52 +744,52 @@ public class Users {
 		
 		Scanner input = new Scanner(System.in);
 		        String password, rptpassword;
-		        boolean same = false;
 		            System.out.print("Password: ");
 		            password = input.next();
-		            System.out.print("Confirm Password: ");
-		            rptpassword = input.next();
-		            if(password.length()<6){
-		            	System.out.println("Password must contain a minimum of 6 characters.");
-		            }
-		            else if (password.equals(rptpassword)) {
-		            	System.out.println("User "+name+" has been created.");
-		            		Security.addProvider(new BouncyCastleProvider());
-		            		File f = new File("keys/" + name + ".pem");
-		            		if (f.exists()) {
-		            			System.out.println("User's RSA KEY Exists");
-		            		} else {
-		            		KeyPair keyPair = generateRSAKeyPair();
-		            		RSAPrivateKey priv = (RSAPrivateKey) keyPair.getPrivate();
-		            		RSAPublicKey pub = (RSAPublicKey) keyPair.getPublic();
+		            String regex = "((?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{6,})";
+		            Pattern pattern = Pattern.compile(regex);
+		            Matcher matcher = pattern.matcher(password);
+		            if(matcher.matches()) {
+		            	System.out.print("Confirm Password: ");
+			            rptpassword = input.next();
+			            input.close();
+		            	if (password.equals(rptpassword)) {
+			            	System.out.println("User "+name+" has been created.");
+			            		Security.addProvider(new BouncyCastleProvider());
+			            		File f = new File("keys/" + name + ".pem");
+			            		if (f.exists()) {
+			            			System.out.println("User's RSA KEY Exists");
+			            		} else {
+			            		KeyPair keyPair = generateRSAKeyPair();
+			            		RSAPrivateKey priv = (RSAPrivateKey) keyPair.getPrivate();
+			            		RSAPublicKey pub = (RSAPublicKey) keyPair.getPublic();
 
-		            		writePemFile(priv, "RSA PRIVATE KEY", "keys/" + name + ".pem");
-		            		writePemFile(pub, "RSA PUBLIC KEY", "keys/" + name + ".pub.pem");
-		            	}
-		            		File file = new File("C:/Users/IFES Yoga/Downloads/RSA Create-User/keys/" + name + ".password.xml");
-				    		FileWriter myWriter = new FileWriter(file);
-				    		SecureRandom random = new SecureRandom();
-				    		byte[] salt = new byte[16];
-				    		random.nextBytes(salt);
-				    		String password2=new String(salt).concat(password);
-				    		KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 128);
-				    		SecretKeyFactory f1 = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-				    		byte[] hash = f1.generateSecret(spec).getEncoded();
-				    		Base64.Encoder enc = Base64.getEncoder();
-				    		System.out.printf("salt: %s%n", enc.encodeToString(salt));
-				    		System.out.printf("hash: %s%n", enc.encodeToString(hash));
-				    		System.out.println("saltedpassword: "+enc.encodeToString(password2.getBytes()));
-				    		String hashpw = enc.encodeToString(hash);
-				    		String saltpw =enc.encodeToString(password2.getBytes());
-				    		
-				    		myWriter.write(hashpw + " . " +enc.encodeToString(salt)+" . "+saltpw);
-				    	    myWriter.close();
-				    	    System.out.println("Successfully created the hashed password.");
-		            		}else {
-		            		System.out.println("The entered passwords do not match. Please try again.");
-		            }   
-		            
-		} 
+			            		writePemFile(priv, "RSA PRIVATE KEY", "keys/" + name + ".pem");
+			            		writePemFile(pub, "RSA PUBLIC KEY", "keys/" + name + ".pub.pem");
+			            	}
+			            		File file = new File("C:/Users/IFES Yoga/Downloads/RSA Create-User/keys/" + name + ".password.xml");
+					    		FileWriter myWriter = new FileWriter(file);
+					    		SecureRandom random = new SecureRandom();
+					    		byte[] salt = new byte[16];
+					    		random.nextBytes(salt);
+					    		String password2=new String(salt).concat(password);
+					    		KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 128);
+					    		SecretKeyFactory f1 = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+					    		byte[] hash = f1.generateSecret(spec).getEncoded();
+					    		Base64.Encoder enc = Base64.getEncoder();
+					    		String hashpw = enc.encodeToString(hash);
+					    		String saltpw =enc.encodeToString(password2.getBytes());
+					    		
+					    		myWriter.write(hashpw + " . " +enc.encodeToString(salt)+" . "+saltpw);
+					    	    myWriter.close();
+					    	    System.out.println("Successfully created the hashed password.");
+			            		}else {
+			            		System.out.println("Passwords do not match. Please try again.");
+			            }   
+		            }else {
+		            	System.out.println("Password must contain: \nAt least 6 characters,\nAt least one letter,\nAt least one digit,\nAt least one of the following symbols: @, $, !, %, *, #, ?, & ");
+		            }
+		}
 	
 	private static void login(String name) throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, URISyntaxException {
 		
@@ -765,7 +805,7 @@ public class Users {
 					Date expire = new Date(current + 20*60000);
 					String token = JWT.create().withIssuer(name).withIssuedAt(now).withExpiresAt(expire).sign(algorithm);
 					writeToken(token,name);
-					verifyToken(name);
+					System.out.println("Token: "+token);
 					} catch (JWTCreationException exception){
 					
 					}
@@ -792,7 +832,6 @@ public class Users {
 	
 	private static void verifyToken(String name) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, URISyntaxException {
 		
-		if(!name.contains(".")) {
 		RSAPublicKey publicKey = (RSAPublicKey) getpubKeyFromFile(name);
 		RSAPrivateKey privateKey = getprivKeyFromFile(name);
 		try {
@@ -808,55 +847,63 @@ public class Users {
 		} catch (JWTVerificationException exception){
 		    System.out.println("Token not valid!");
 		}
-	}else {
-		RSAPublicKey publicKey = (RSAPublicKey) getpubKeyFromFile(name);
-		RSAPrivateKey privateKey = getprivKeyFromFile(name);
-		try {
-		    Algorithm algorithm = Algorithm.RSA256(publicKey, privateKey);
-		    JWTVerifier verifier = JWT.require(algorithm)
-		        .withIssuer(name).build(); //Reusable verifier instance
-		    DecodedJWT jwt = verifier.verify(name);
-		    Date expired = jwt.getExpiresAt();
-		    String user = jwt.getIssuer();
-		    System.out.println("User: "+user);
-		    System.out.println("Valid!");
-		    System.out.println("Expiration date: "+expired);
-		} catch (JWTVerificationException exception){
-		    System.out.println("Token not valid!");
 	}
-		}}
+	
+	private static void verifyToken(String name, String token) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, URISyntaxException {
+	
+			RSAPublicKey publicKey = (RSAPublicKey) getpubKeyFromFile(name);
+			RSAPrivateKey privateKey = getprivKeyFromFile(name);
+			try {
+			    Algorithm algorithm = Algorithm.RSA256(publicKey, privateKey);
+			    JWTVerifier verifier = JWT.require(algorithm)
+			        .withIssuer(name).build(); //Reusable verifier instance
+			    DecodedJWT jwt = verifier.verify(token);
+			    Date expired = jwt.getExpiresAt();
+			    String user = jwt.getIssuer();
+			    System.out.println("User: "+user);
+			    System.out.println("Valid!");
+			    System.out.println("Expiration date: "+expired);
+			} catch (JWTVerificationException exception){
+			    System.out.println("Token not valid!");
+		}
+			}
+	
+	public static boolean verify(String plainText, String signature, PublicKey publicKey) throws Exception {
+	    Signature publicSignature = Signature.getInstance("SHA256withRSA");
+	    try {
+	    	try {
+	    publicSignature.initVerify(publicKey);
+	    publicSignature.update(plainText.getBytes());
+	    	}catch (InvalidKeyException e) {
+				System.out.println("\nNo Public Key.");
+			}
+	    byte[] signatureBytes = Base64.getDecoder().decode(signature);
+
+	    return publicSignature.verify(signatureBytes);
+	}catch(IllegalArgumentException e){
+		return false;
+	}}
 		
 	private static void deleteUser(String name) {
 
 		File filePub = new File("C:\\Users\\IFES Yoga\\Downloads\\RSA Create-User\\keys/" + name + ".pub.pem");
 		File filePriv = new File("C:\\Users\\IFES Yoga\\Downloads\\RSA Create-User\\keys/" + name + ".pem");
-		File password = new File("C:/Users/IFES Yoga/Downloads/RSA Create-User/keys/" + name + ".password.txt");
+		File password = new File("C:/Users/IFES Yoga/Downloads/RSA Create-User/keys/" + name + ".password.xml");
+		File token = new File("C:/Users/IFES Yoga/Downloads/RSA Create-User/keys/" + name + ".jwt");
 
+		if(filePub.exists() || filePriv.exists() || password.exists() || token.exists()) {
 		if (filePub.delete() ) {
-			if(filePriv.delete()) {
-				if(password.delete()) {
-				System.out.println("Deleted file: " + name+".pem");
-				System.out.println("Deleted file: " + name + ".pub.pem");
-				System.out.println("Deleted file: "+name+".password.txt");
-				}else {
-					System.out.println("Deleted file: " + name+".pem");
-					System.out.println("Deleted file: " + name + ".pub.pem");
-				}}else {
-				System.out.println("Deleted file: " + name + ".pub.pem");
-				}
-		} else if(filePriv.delete()){
-			if(password.delete()) {
-				System.out.println("Deleted file: "+name+".password.txt");
-				System.out.println("Deleted file: " + name+".pem");
-			}else {
-				System.out.println("Deleted file: " + name+".pem");
-			}}else if(password.delete()) {
-				System.out.println("Deleted file: "+name+".password.txt");
-			}
-				else {
-					System.out.println("Failed to delete the files!");
-				}
-	}
+			System.out.println("Deleted file: " + name + ".pub.pem");
+		} if(filePriv.delete()) {
+			System.out.println("Deleted file: " + name + ".pem");
+		} if(password.delete()) {
+			System.out.println("Deleted file: " + name + ".password.xml");
+		}if(token.delete()) {
+			System.out.println("Deleted file: " + name + ".jwt");
+		}}else {
+			System.out.println("Failed to delete the files.");
+		}
+		}
 
 	private static boolean checkpassword(String name) {
 		File file = new File("C:\\Users\\IFES Yoga\\Downloads\\RSA Create-User\\keys/" + name + ".password.xml");
@@ -866,6 +913,7 @@ public class Users {
         boolean same = false;
             System.out.print("Password: ");
             password1 = input.nextLine();
+            input.close();
             String cipher = readLine(file.toString());
 			String messageSplit[] = cipher.split(" . ");
 			Base64.Encoder enc = Base64.getEncoder();
@@ -930,18 +978,23 @@ public class Users {
 	
 	private static PublicKey getpubKeyFromFile(String name)
 			throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, URISyntaxException {
+		try {
 		String filePath = "C:/Users/IFES Yoga/Downloads/RSA Create-User/keys/" + name + ".pub.pem";
+		
 		String keypub = readLine(filePath);
 
 		PemObject pem = new PemReader(new StringReader(keypub)).readPemObject();
+		
 		byte[] pubKeyBytes = pem.getContent();
 		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 		X509EncodedKeySpec pubSpec = new X509EncodedKeySpec(pubKeyBytes);
 		RSAPublicKey pubKey = (RSAPublicKey) keyFactory.generatePublic(pubSpec);
-
 		
 		return pubKey;
+	}catch (Exception e) {
 	}
+		return null;
+		}
 
 	private static String readLine(String filePath) {
 		final StringBuilder contentBuilder = new StringBuilder();
@@ -949,7 +1002,6 @@ public class Users {
 		try (Stream<String> stream = Files.lines(Paths.get(filePath), StandardCharsets.UTF_8)) {
 			stream.forEach(s -> contentBuilder.append(s).append("\n"));
 		} catch (IOException e) {
-			e.printStackTrace();
 		}
 
 		return contentBuilder.toString();
@@ -1005,7 +1057,32 @@ public class Users {
 		if(cipherText.contains(" . ")) {
 			String messageSplit[] = cipherText.split(" . ");
 			
-			
+			if(messageSplit.length>4) {
+				byte[] decodedUser = Base64.getDecoder().decode(messageSplit[0]);
+				System.out.println("Reciever: " + new String(decodedUser));
+				
+				byte[] decodedIV = Base64.getDecoder().decode(messageSplit[1]);
+				Users.DESKey = decodedIV;
+				getSecretDES();
+				 
+				byte[] decodedMessage = Base64.getDecoder().decode(messageSplit[3]);
+				byte[] decodedSender = Base64.getDecoder().decode(messageSplit[4]);
+				
+				Cipher desCipher;
+				// Create the cipher
+				desCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+
+				desCipher.init(Cipher.DECRYPT_MODE, DESSecretKey);
+
+				// Decrypt the text
+				byte[] textDecrypted = desCipher.doFinal(decodedMessage);
+				textDecrypted = decryptRSAText(new String(textDecrypted), getprivKeyFromFile(new String(decodedUser)));
+				
+				System.out.println("Decrypted text: " + new String(textDecrypted));
+				boolean isCorrect = verify(new String(textDecrypted), messageSplit[5], getpubKeyFromFile(new String(decodedSender)));
+				System.out.println("Sender: " + new String(decodedSender));
+				System.out.println("Signature: " + isCorrect);
+			}else {
 			byte[] decodedUser = Base64.getDecoder().decode(messageSplit[0]);
 			System.out.println("Reciever: " + new String(decodedUser));
 			
@@ -1013,7 +1090,6 @@ public class Users {
 			Users.DESKey = decodedIV;
 			getSecretDES();
 			 
-
 			byte[] decodedMessage = Base64.getDecoder().decode(messageSplit[3]);
 			Cipher desCipher;
 			// Create the cipher
@@ -1027,30 +1103,53 @@ public class Users {
 			byte[] textDecrypted = desCipher.doFinal(decodedMessage);
 			textDecrypted = decryptRSAText(new String(textDecrypted), getprivKeyFromFile(new String(decodedUser)));
 			
-			System.out.println("Text Decryted : " + new String(textDecrypted));
-
+			System.out.println("Decrypted text : " + new String(textDecrypted));
+			}
 		}
 		else {
 			if(cipherText.contains("encrypted.txt")) {
 			String cipher = readLine(cipherText);
 			
 			String messageSplit[] = cipher.split(" . ");
+			if(messageSplit.length>4) {
+				byte[] decodedUser = Base64.getDecoder().decode(messageSplit[0]);
+				System.out.println("Reciever: " + new String(decodedUser));
+				
+				byte[] decodedIV = Base64.getDecoder().decode(messageSplit[1]);
+				Users.DESKey = decodedIV;
+				getSecretDES();
+
+				byte[] decodedMessage = Base64.getDecoder().decode(messageSplit[3].trim());
+				Cipher desCipher;
+				// Create the cipher
+				desCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
 			
-			
+				// Initialize the same cipher for decryption
+				desCipher.init(Cipher.DECRYPT_MODE, DESSecretKey);
+
+				// Decrypt the text
+				byte[] textDecrypted = desCipher.doFinal(decodedMessage);
+				textDecrypted = decryptRSAText(new String(textDecrypted), getprivKeyFromFile(new String(decodedUser)));
+				
+				System.out.println("Decrypted text : " + new String(textDecrypted));
+				byte[] decodedSender = Base64.getDecoder().decode(messageSplit[4]);
+				boolean isCorrect = verify(new String(textDecrypted), messageSplit[5], getpubKeyFromFile(new String(decodedSender)));
+				System.out.println("Sender: " + new String(decodedSender));
+				System.out.println("Signature: " + isCorrect);
+			}else {
+				
 			byte[] decodedUser = Base64.getDecoder().decode(messageSplit[0]);
 			System.out.println("Reciever: " + new String(decodedUser));
 			
 			byte[] decodedIV = Base64.getDecoder().decode(messageSplit[1]);
 			Users.DESKey = decodedIV;
 			getSecretDES();
-			 
 
 			byte[] decodedMessage = Base64.getDecoder().decode(messageSplit[3].trim());
 			Cipher desCipher;
 			// Create the cipher
 			desCipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
-			
-
+		
 			// Initialize the same cipher for decryption
 			desCipher.init(Cipher.DECRYPT_MODE, DESSecretKey);
 
@@ -1058,8 +1157,8 @@ public class Users {
 			byte[] textDecrypted = desCipher.doFinal(decodedMessage);
 			textDecrypted = decryptRSAText(new String(textDecrypted), getprivKeyFromFile(new String(decodedUser)));
 			
-			System.out.println("Text Decryted : " + new String(textDecrypted));
-			}
+			System.out.println("Decrypted text : " + new String(textDecrypted));
+			}}
 			else {
 				System.out.println("File doesnt exist!");
 			}
